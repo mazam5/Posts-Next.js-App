@@ -30,14 +30,14 @@ export default function Home() {
   );
 
   // Scroll to the first card when page changes
-  // React.useEffect(() => {
-  //   if (firstCardRef.current) {
-  //     firstCardRef.current.scrollIntoView({
-  //       behavior: "smooth",
-  //       block: "nearest",
-  //     });
-  //   }
-  // }, [currentPage]);
+  React.useEffect(() => {
+    if (firstCardRef.current) {
+      firstCardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [currentPage]);
 
   return (
     <div className="mx-auto p-4">
