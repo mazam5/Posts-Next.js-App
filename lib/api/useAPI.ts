@@ -8,6 +8,18 @@ const useAPI = () => {
     return data;
   };
 
+  const getPostById = async (id: number) => {
+    const response = await fetch(
+      `https://jsonplaceholder.typicode.com/posts/${id}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch post");
+    }
+    const data = await response.json();
+    return data;
+  };
+
   const addPost = async (post: NewPost) => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
@@ -57,6 +69,7 @@ const useAPI = () => {
     getPosts,
     updatePost,
     deletePost,
+    getPostById,
   };
 };
 

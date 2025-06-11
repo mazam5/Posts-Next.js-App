@@ -1,6 +1,9 @@
 "use client";
+import dynamic from "next/dynamic";
+const JoditEditor = dynamic(() => import("jodit-react"), {
+  ssr: false,
+});
 import { zodResolver } from "@hookform/resolvers/zod";
-import JoditEditor from "jodit-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
