@@ -38,16 +38,16 @@ const Page = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const query = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["posts"],
     queryFn: getPosts,
     refetchOnWindowFocus: false,
   });
 
-  const totalItems = query.data?.length || 0;
+  const totalItems = data?.length || 0;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-  const paginatedData = query.data?.slice(
+  const paginatedData = data?.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -56,21 +56,18 @@ const Page = () => {
     mutationFn: deletePost,
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      // queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id);
-    query.data.splice(
-      query.data.findIndex((post: Post) => post.id === id),
+    data.splice(
+      data.findIndex((post: Post) => post.id === id),
       1
     );
-    queryClient.setQueryData(["posts"], query.data);
-    toast.warning("Post deleted successfully", {
-      icon: <Trash className="h-4 w-4" />,
-      description: `Post with ID ${id} has been deleted.`,
-    });
+    queryClient.setQueryData(["posts"], data);
+    toast.error(`Post with ID ${id} deleted successfully!`);
   };
 
   return (
@@ -96,7 +93,7 @@ const Page = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {query.isLoading ? (
+          {isLoading ? (
             <>
               {Array.from({ length: 10 }).map((_, index) => (
                 <TableRow key={index} className="w-full">
@@ -108,10 +105,10 @@ const Page = () => {
                 </TableRow>
               ))}
             </>
-          ) : query.isError ? (
+          ) : isError ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center">
-                Error: {query.error.message}
+                Error: {error.message}
               </TableCell>
             </TableRow>
           ) : (

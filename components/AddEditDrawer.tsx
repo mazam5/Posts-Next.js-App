@@ -1,12 +1,12 @@
 "use client";
-import dynamic from "next/dynamic";
-const JoditEditor = dynamic(() => import("jodit-react"), {
-  ssr: false,
-});
 import { zodResolver } from "@hookform/resolvers/zod";
+import dynamic from "next/dynamic";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+const JoditEditor = dynamic(() => import("jodit-react"), {
+  ssr: false,
+});
 
 import { Button } from "@/components/ui/button";
 import {
@@ -147,7 +147,6 @@ function PostForm({
         body: values.body,
       });
     }
-    form.reset(); // Reset the form after submission
   }
   const editor = React.useRef(null);
 
@@ -164,24 +163,20 @@ function PostForm({
   const addMutation = useMutation({
     mutationFn: addPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      onSuccess();
       toast.success("Post added successfully!");
-      if (onSuccess) {
-        onSuccess();
-      }
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: updatePost,
     onSuccess: () => {
+      onSuccess();
+      toast.info(`Post with ID ${formData?.id} updated successfully!`);
+      form.reset();
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.info("Post updated successfully!", {
-        description: "Your changes have been saved.",
-      });
-      if (onSuccess) {
-        onSuccess();
-      }
     },
   });
 

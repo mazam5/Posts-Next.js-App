@@ -19,7 +19,6 @@ export default function Home() {
     refetchOnWindowFocus: false,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
-  const firstCardRef = React.useRef<HTMLDivElement>(null); // Ref for scrolling
 
   const totalPosts = query.data?.length || 0;
   const totalPages = Math.ceil(totalPosts / ITEMS_PER_PAGE);
@@ -28,16 +27,6 @@ export default function Home() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  // Scroll to the first card when page changes
-  React.useEffect(() => {
-    if (firstCardRef.current) {
-      firstCardRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [currentPage]);
 
   return (
     <div className="mx-auto p-4">
@@ -80,7 +69,6 @@ export default function Home() {
                   id={post.id.toString()}
                 >
                   <Card
-                    ref={index === 0 ? firstCardRef : null}
                     onClick={() => console.log(`Post clicked: ${post.id}`)}
                     className="px-4 py-3 md:min-h-36 h-32 relative cursor-pointer duration-300 ease-in-out hover:scale-95 hover:shadow-lg"
                   >
