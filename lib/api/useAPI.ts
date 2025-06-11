@@ -1,4 +1,4 @@
-import { NewPost } from "@/types";
+import { NewPost, Post } from "@/types";
 
 const useAPI = () => {
   const getPosts = async () => {
@@ -9,7 +9,7 @@ const useAPI = () => {
   };
 
   const addPost = async (post: NewPost) => {
-    const response = await fetch("/posts", {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,14 +24,17 @@ const useAPI = () => {
     return response.json();
   };
 
-  const updatePost = async (id: number, post: NewPost) => {
-    const response = await fetch(`/posts/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(post),
-    });
+  const updatePost = async (post: Post) => {
+    const response = await fetch(
+      `https://jsonplaceholder.typicode.com/posts/${post.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(post),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to update post");

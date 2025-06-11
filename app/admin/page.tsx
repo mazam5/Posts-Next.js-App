@@ -32,7 +32,7 @@ import AddEditDrawer from "@/components/AddEditDrawer";
 const ITEMS_PER_PAGE = 10;
 
 const Page = () => {
-  const { getPosts, deletePost, addPost, updatePost } = useAPI();
+  const { getPosts, deletePost } = useAPI();
 
   const queryClient = useQueryClient();
 
@@ -52,7 +52,7 @@ const Page = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const mutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: deletePost,
     onSuccess: () => {
       // Invalidate and refetch
@@ -61,17 +61,15 @@ const Page = () => {
   });
 
   const handleDelete = (id: number) => {
-    mutation.mutate(id);
+    deleteMutation.mutate(id);
     query.data.splice(
       query.data.findIndex((post: Post) => post.id === id),
       1
     );
     queryClient.setQueryData(["posts"], query.data);
-    toast("Post deleted successfully", {
+    toast.warning("Post deleted successfully", {
       icon: <Trash className="h-4 w-4" />,
       description: `Post with ID ${id} has been deleted.`,
-      duration: 3000,
-      position: "bottom-center",
     });
   };
 
@@ -180,7 +178,7 @@ const Page = () => {
           totalPages={totalPages}
         />
       )}
-      <Toaster richColors />
+      <Toaster richColors position="bottom-center" />
     </div>
   );
 };

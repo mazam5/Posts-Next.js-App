@@ -1,9 +1,9 @@
 "use client";
-import React from "react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import JoditEditor from "jodit-react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,7 +34,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
+import useAPI from "@/lib/api/useAPI";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -47,7 +49,7 @@ const AddEditDrawer = ({
   isEdit,
   children,
 }: {
-  formData?: { title: string; body: string };
+  formData?: { title: string; body: string; id: number };
   isEdit: boolean;
   children: React.ReactNode;
 }) => {
@@ -66,7 +68,11 @@ const AddEditDrawer = ({
                 : "Use this form to create a new post. Fill in the title and body, then click save when you're done."}
             </DialogDescription>
           </DialogHeader>
-          <PostForm formData={formData} />
+          <PostForm
+            formData={formData}
+            isEdit={isEdit}
+            onSuccess={() => setOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     );
@@ -83,7 +89,12 @@ const AddEditDrawer = ({
               : "Use this form to create a new post. Fill in the title and body, then click save when you&apos;re done."}
           </DrawerDescription>
         </DrawerHeader>
-        <PostForm formData={formData} />
+        <PostForm
+          formData={formData}
+          isEdit={isEdit}
+          onSuccess={() => setOpen(false)}
+        />
+
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
@@ -97,8 +108,12 @@ export default AddEditDrawer;
 
 function PostForm({
   formData,
+  isEdit,
+  onSuccess,
 }: {
-  formData?: { title: string; body: string };
+  formData?: { title: string; body: string; id: number };
+  isEdit: boolean;
+  onSuccess: () => void;
 }) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -112,25 +127,60 @@ function PostForm({
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+
+    if (isEdit && formData) {
+      // If editing, update the post
+      updateMutation.mutate({
+        userId: 1, // Assuming a static userId for now
+        id: formData.id,
+        title: values.title,
+        body: values.body,
+      });
+    } else {
+      // If adding a new post, create it
+      addMutation.mutate({
+        userId: 1, // Assuming a static userId for now
+        title: values.title,
+        body: values.body,
+      });
+    }
+    form.reset(); // Reset the form after submission
   }
   const editor = React.useRef(null);
-  // 3. Render your form.
-  //   React.useEffect(() => {
-  //     // Reset the form when the component mounts
-  //     form.reset({
-  //       title: "",
-  //       body: "",
-  //     });
-  //   }, [form]);
+
   const config = React.useMemo(
     () => ({
       readonly: false, // all options from https://xdsoft.net/jodit/docs/,
       placeholder: form.getValues("body") || "Start typing...",
     }),
-    []
+    [form]
   );
+  const { addPost, updatePost } = useAPI();
+  const queryClient = useQueryClient();
+
+  const addMutation = useMutation({
+    mutationFn: addPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast.success("Post added successfully!");
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updatePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast.info("Post updated successfully!", {
+        description: "Your changes have been saved.",
+      });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
 
   return (
     <Form {...form}>
@@ -144,11 +194,10 @@ function PostForm({
               <FormControl>
                 <Input placeholder="Post Title" {...field} />
               </FormControl>
-              <FormDescription>This is the title of your post.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
-        />{" "}
+        />
         <FormField
           control={form.control}
           name="body"
