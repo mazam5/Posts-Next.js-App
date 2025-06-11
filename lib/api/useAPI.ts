@@ -1,8 +1,13 @@
-"use server";
-
 import { NewPost } from "@/types";
 
-const useServer = () => {
+const useAPI = () => {
+  const getPosts = async () => {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+
+    const data = response.json();
+    return data;
+  };
+
   const addPost = async (post: NewPost) => {
     const response = await fetch("/posts", {
       method: "POST",
@@ -46,9 +51,10 @@ const useServer = () => {
   };
   return {
     addPost,
+    getPosts,
     updatePost,
     deletePost,
   };
 };
 
-export default useServer;
+export default useAPI;

@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -19,12 +20,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import useClient from "@/lib/api/useClient";
+import UserPagination from "@/components/UserPagination";
+import useAPI from "@/lib/api/useAPI";
 import { Post } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit, Plus, Trash } from "lucide-react";
+import { useState } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import AddEditDrawer from "@/components/AddEditDrawer";
+const ITEMS_PER_PAGE = 10;
+
 const Page = () => {
-  const { getPosts } = useClient();
+  const { getPosts, deletePost, addPost, updatePost } = useAPI();
+
+  const queryClient = useQueryClient();
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const query = useQuery({
     queryKey: ["posts"],
@@ -32,17 +44,50 @@ const Page = () => {
     refetchOnWindowFocus: false,
   });
 
+  const totalItems = query.data?.length || 0;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+  const paginatedData = query.data?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const mutation = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    mutation.mutate(id);
+    query.data.splice(
+      query.data.findIndex((post: Post) => post.id === id),
+      1
+    );
+    queryClient.setQueryData(["posts"], query.data);
+    toast("Post deleted successfully", {
+      icon: <Trash className="h-4 w-4" />,
+      description: `Post with ID ${id} has been deleted.`,
+      duration: 3000,
+      position: "bottom-center",
+    });
+  };
+
   return (
     <div className="w-full p-4">
       <div className="flex">
         <h1 className="text-2xl font-bold mb-4">Admin</h1>
-        <Button className="ml-auto">
-          <Plus className="ml-2" />
-          Add New Post
-        </Button>
+        <AddEditDrawer isEdit={false}>
+          <Button className="ml-auto">
+            <Plus className="ml-2" />
+            Add New Post
+          </Button>
+        </AddEditDrawer>
       </div>
 
-      <Table className="border">
+      <Table className="rounded-xl overflow-hidden ">
         <TableHeader className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
           <TableRow>
             <TableHead>ID</TableHead>
@@ -54,11 +99,17 @@ const Page = () => {
         </TableHeader>
         <TableBody>
           {query.isLoading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                Loading...
-              </TableCell>
-            </TableRow>
+            <>
+              {Array.from({ length: 10 }).map((_, index) => (
+                <TableRow key={index} className="w-full">
+                  {Array.from({ length: 5 }).map((_, cellIndex) => (
+                    <TableCell key={cellIndex}>
+                      <Skeleton className="md:h-12 h-8 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </>
           ) : query.isError ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center">
@@ -66,30 +117,32 @@ const Page = () => {
               </TableCell>
             </TableRow>
           ) : (
-            query.data?.map((post: Post) => (
+            paginatedData?.map((post: Post) => (
               <TableRow
                 key={post.id}
                 className={`hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
                 <TableCell>{post.id}</TableCell>
-                <TableCell className="truncate capitalize">
+                <TableCell className="capitalize">
                   {post.title.length > 30
                     ? post.title.slice(0, 30) + "..."
                     : post.title}
                 </TableCell>
-                <TableCell className="truncate">
+                <TableCell>
                   {post.body.length > 60
                     ? post.body.slice(0, 60) + "..."
                     : post.body}
                 </TableCell>
                 <TableCell>
-                  <button>
-                    <Edit />
-                  </button>
+                  <AddEditDrawer isEdit={true} formData={post}>
+                    <Button className="bg-gray-900 hover:bg-gray-700 cursor-pointer p-4 rounded-2xl text-white">
+                      <Edit />
+                    </Button>
+                  </AddEditDrawer>
                 </TableCell>
                 <TableCell>
                   <AlertDialog>
-                    <AlertDialogTrigger className="text-red-500 hover:bg-red-700 bg-gray-900 hover:text-white cursor-pointer py-2 px-4 rounded">
+                    <AlertDialogTrigger className="text-red-500 hover:bg-red-700 bg-gray-900 hover:text-white cursor-pointer py-2 px-4 rounded-2xl">
                       <Trash />
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -99,13 +152,18 @@ const Page = () => {
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                           This action cannot be undone. This will permanently
-                          delete the post with ID {post.id}. Are you sure you
-                          want to proceed?
+                          delete the post with ID {post.id}.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Continue</AlertDialogAction>
+                        <AlertDialogAction
+                          onClick={() => {
+                            handleDelete(post.id);
+                          }}
+                        >
+                          Continue
+                        </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -115,7 +173,16 @@ const Page = () => {
           )}
         </TableBody>
       </Table>
+      {totalPages > 1 && (
+        <UserPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+        />
+      )}
+      <Toaster richColors />
     </div>
   );
 };
+
 export default Page;
