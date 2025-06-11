@@ -56,7 +56,7 @@ const Page = () => {
     mutationFn: deletePost,
     onSuccess: () => {
       // Invalidate and refetch
-      // queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
