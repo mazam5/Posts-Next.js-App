@@ -1,6 +1,6 @@
 import { Home, ShieldUser } from "lucide-react";
 
-import { ToggleDarkMode } from "@/app/(components)/ToggleDarkMode";
+import { ToggleDarkMode } from "@/components/ToggleDarkMode";
 import {
   Sidebar,
   SidebarContent,
@@ -49,7 +49,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="mb-12">
+      <SidebarFooter>
         <SidebarGroupLabel>Theme</SidebarGroupLabel>
         <ToggleDarkMode />
       </SidebarFooter>

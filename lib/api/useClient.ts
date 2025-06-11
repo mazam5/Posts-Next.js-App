@@ -1,11 +1,13 @@
-const useAdminItems = () => {
+const useClient = () => {
   const getPosts = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-    return response.json();
+
+    const data = response.json();
+    return data;
   };
   return {
     getPosts,
   };
 };
 
-export default useAdminItems;
+export default useClient;

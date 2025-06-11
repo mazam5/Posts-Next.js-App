@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Poppins } from "next/font/google";
 import "./globals.css";
 
-import { ThemeProvider } from "@/app/(components)/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { TanstackProvider } from "@/components/providers/tanstack-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -28,22 +30,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${poppins.variable} ${geistSans.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarTrigger title="Toggle Sidebar">
-              Toggle Sidebar
-            </SidebarTrigger>
-            {children}
-          </SidebarProvider>
+          <TanstackProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarTrigger title="Toggle Sidebar">
+                Toggle Sidebar
+              </SidebarTrigger>
+              {children}
+            </SidebarProvider>
+          </TanstackProvider>
         </ThemeProvider>
       </body>
     </html>
