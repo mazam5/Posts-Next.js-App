@@ -118,7 +118,6 @@ function PostForm({
   isEdit: boolean;
   onSuccess: () => void;
 }) {
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -127,12 +126,8 @@ function PostForm({
     },
   });
 
-  // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-
     if (isEdit && formData) {
-      // If editing, update the post
       updateMutation.mutate({
         userId: 1, // Assuming a static userId for now
         id: formData.id,
@@ -140,7 +135,6 @@ function PostForm({
         body: values.body,
       });
     } else {
-      // If adding a new post, create it
       addMutation.mutate({
         userId: 1, // Assuming a static userId for now
         title: values.title,
@@ -152,8 +146,8 @@ function PostForm({
 
   const config = React.useMemo(
     () => ({
-      readonly: false, // all options from https://xdsoft.net/jodit/docs/,
-      placeholder: form.getValues("body") || "Start typing...",
+      readonly: false,
+      placeholder: form.getValues("body") || "Enter Body here...",
     }),
     [form]
   );
@@ -210,7 +204,7 @@ function PostForm({
                   form.setValue("body", newContent);
                 }}
                 config={config}
-                tabIndex={1} // tabIndex of textarea
+                tabIndex={1}
                 onBlur={(newContent) => form.setValue("body", newContent)}
               />
               <FormMessage />

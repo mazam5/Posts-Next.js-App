@@ -2,7 +2,6 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
@@ -17,42 +16,40 @@ const UserPagination = ({
   totalPages: number;
 }) => {
   return (
-    <Pagination className="mt-8">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage > 1) setCurrentPage(currentPage - 1);
-            }}
-          />
-        </PaginationItem>
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <PaginationItem key={i}>
-            <PaginationLink
-              href="#"
-              isActive={currentPage === i + 1}
+    <div className="border w-1/3 flex justify-center mx-auto">
+      <Pagination className="border">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              className={`${
+                currentPage === 1 ? "disabled hidden" : ""
+              } select-none`}
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentPage(i + 1);
+                if (currentPage > 1) setCurrentPage(currentPage - 1);
               }}
-            >
-              {i + 1}
-            </PaginationLink>
+            />
           </PaginationItem>
-        ))}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-            }}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+          <PaginationItem className="flex items-center">
+            <p className="text-sm text-gray-500">
+              {currentPage} of {totalPages}
+            </p>
+          </PaginationItem>
+
+          <PaginationItem>
+            <PaginationNext
+              className={`${
+                currentPage === totalPages ? "disabled hidden" : ""
+              } select-none`}
+              onClick={(e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+              }}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
   );
 };
 export default UserPagination;

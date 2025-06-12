@@ -21,6 +21,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Posts - Next.js App Router",
   description: "A simple blog application built with Next.js App Router.",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

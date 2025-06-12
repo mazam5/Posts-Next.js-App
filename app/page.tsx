@@ -61,7 +61,7 @@ export default function Home() {
       <div>
         {paginatedPosts && paginatedPosts.length > 0 && !query.error && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-6">
               {paginatedPosts.map((post: Post, index: number) => (
                 <Link
                   href={`/posts/${post.id}`}
@@ -70,7 +70,7 @@ export default function Home() {
                 >
                   <Card
                     onClick={() => console.log(`Post clicked: ${post.id}`)}
-                    className="px-4 py-3 md:min-h-36 h-32 relative cursor-pointer duration-300 ease-in-out hover:scale-95 hover:shadow-lg"
+                    className="md:px-4 md:py-3 p-2 md:min-h-36 min-h-32 relative cursor-pointer duration-300 ease-in-out hover:scale-95 hover:shadow-lg"
                   >
                     <span className="text-sm text-gray-500 top-0 right-0 font-bold absolute font-mono p-1 bg-gray-100 rounded">
                       #{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
